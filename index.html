@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Автоматизатор для тебя</title>
+  <!-- Подключаем шрифт с японским стилем -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Глобальные стили с японским минималистичным акцентом */
+    body {
+      font-family: 'Noto Sans JP', Arial, sans-serif;
+      margin: 0;
+      background: #fafafa;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .tab-button {
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      background: #e0e0e0;
+      border: none;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+    .tab-button.active,
+    .tab-button:hover {
+      background: #37474f;
+      color: #fff;
+    }
+    .tab-content {
+      display: none;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    input, select, button, textarea {
+      padding: 10px;
+      margin: 5px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    button {
+      background: #37474f;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #455a64;
+    }
+    .preview {
+      max-width: 100%;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    canvas {
+      display: none;
+    }
+    /* Адаптация для мобильных устройств */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      .tab-button {
+        padding: 8px 15px;
+        font-size: 14px;
+      }
+      input, select, button, textarea {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Автоматизатор для тебя</h1>
+
+  <div class="tabs">
+    <button class="tab-button active" data-tab="social">Социальные сети</button>
+    <button class="tab-button" data-tab="print">Печать</button>
+    <button class="tab-button" data-tab="text">Текст в кривые</button>
+  </div>
+
+  <!-- Вкладка: Социальные сети -->
+  <div id="social" class="tab-content active">
+    <h2>Генерация комплектов для соцсетей</h2>
+    <input type="file" id="socialFiles" multiple accept="image/*">
+    <div>
+      <label for="socialTemplate">Шаблон:</label>
+      <select id="socialTemplate">
+        <option value="1080x1080">Instagram (1080x1080)</option>
+        <option value="1920x1080">YouTube (1920x1080)</option>
+        <option value="1200x630">Facebook (1200x630)</option>
+        <option value="800x800">VK (800x800)</option>
+      </select>
+    </div>
+    <div>
+      <label for="socialFormat">Формат:</label>
+      <select id="socialFormat">
+        <option value="image/webp">WebP</option>
+        <option value="image/png">PNG</option>
+        <option value="image/jpeg">JPEG</option>
+      </select>
+    </div>
+    <button onclick="processSocial()">Обработать для соцсетей</button>
+    <div id="socialOutput"></div>
+  </div>
+
+  <!-- Вкладка: Печать -->
+  <div id="print" class="tab-content">
+    <h2>Подгонка под печать</h2>
+    <input type="file" id="printFiles" multiple accept="image/*">
+    <div>
+      <label for="printTemplate">Шаблон печати:</label>
+      <select id="printTemplate">
+        <option value="A4">A4 (210x297 мм)</option>
+        <option value="Custom">Пользовательский</option>
+      </select>
+    </div>
+    <div id="customSize" style="display:none;">
+      <label>Ширина (мм): <input type="number" id="customWidth" value="210"></label>
+      <label>Высота (мм): <input type="number" id="customHeight" value="297"></label>
+    </div>
+    <div>
+      <label for="dpi">DPI:</label>
+      <select id="dpi">
+        <option value="300">300</option>
+        <option value="600">600</option>
+      </select>
+    </div>
+    <div>
+      <label>Bleed (мм): <input type="number" id="bleed" value="3"></label>
+    </div>
+    <div>
+      <label for="printFormat">Формат:</label>
+      <select id="printFormat">
+        <option value="pdf">PDF</option>
+        <option value="image/png">PNG</option>
+      </select>
+    </div>
+    <button onclick="processPrint()">Обработать для печати</button>
+    <div id="printOutput"></div>
+  </div>
+
+  <!-- Вкладка: Текст в кривые -->
+  <div id="text" class="tab-content">
+    <h2>Перевод текста в кривые (SVG)</h2>
+    <textarea id="inputText" rows="4" cols="50" placeholder="Введите текст..."></textarea>
+    <button onclick="vectorizeText()">Преобразовать</button>
+    <div id="textOutput"></div>
+    <p style="font-size: 14px; color: #777;">
+      Примечание: Реальная векторизация текста до кривых требует специализированных инструментов. Этот модуль генерирует базовый SVG с текстом.
+    </p>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <!-- jsPDF для экспорта в PDF (используем CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    // Переключение вкладок
+    document.querySelectorAll('.tab-button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+      });
+    });
+
+    // Показ пользовательских размеров при выборе шаблона "Custom" для печати
+    document.getElementById('printTemplate').addEventListener('change', function() {
+      document.getElementById('customSize').style.display = this.value === 'Custom' ? 'block' : 'none';
+    });
+
+    // Функция для обработки изображений для соцсетей
+    function processSocial() {
+      const files = document.getElementById('socialFiles').files;
+      const template = document.getElementById('socialTemplate').value.split('x').map(Number);
+      const outputFormat = document.getElementById('socialFormat').value;
+      const outputDiv = document.getElementById('socialOutput');
+      outputDiv.innerHTML = '';
+
+      if (files.length === 0) {
+        alert('Выберите изображения для обработки.');
+        return;
+      }
+
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = template[0];
+            canvas.height = template[1];
+            const scale = Math.max(template[0] / img.width, template[1] / img.height);
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
+            const offsetX = (template[0] - newWidth) / 2;
+            const offsetY = (template[1] - newHeight) / 2;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, offsetX, offsetY, newWidth, newHeight);
+            canvas.toBlob(blob => {
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              const ext = outputFormat.split('/')[1];
+              link.href = url;
+              link.download = `social-${file.name.split('.')[0]}.${ext}`;
+              link.innerHTML = `<img src="${url}" class="preview"><br>Скачать ${file.name}`;
+              outputDiv.appendChild(link);
+            }, outputFormat, 0.8);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Функция для обработки изображений для печати
+    function processPrint() {
+      const files = document.getElementById('printFiles').files;
+      const templateSelect = document.getElementById('printTemplate').value;
+      let targetWidthMm, targetHeightMm;
+      if (templateSelect === 'A4') {
+        targetWidthMm = 210;
+        targetHeightMm = 297;
+      } else {
+        targetWidthMm = parseFloat(document.getElementById('customWidth').value);
+        targetHeightMm = parseFloat(document.getElementById('customHeight').value);
+      }
+      const dpi = parseInt(document.getElementById('dpi').value);
+      const bleed = parseFloat(document.getElementById('bleed').value);
+      const outputFormat = document.getElementById('printFormat').value;
+      const outputDiv = document.getElementById('printOutput');
+      outputDiv.innerHTML = '';
+
+      if (files.length === 0) {
+        alert('Выберите изображения для обработки.');
+        return;
+      }
+
+      const targetWidthPx = Math.round((targetWidthMm / 25.4) * dpi);
+      const targetHeightPx = Math.round((targetHeightMm / 25.4) * dpi);
+      const bleedPx = Math.round((bleed / 25.4) * dpi);
+
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = targetWidthPx + 2 * bleedPx;
+            canvas.height = targetHeightPx + 2 * bleedPx;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const scale = Math.max(targetWidthPx / img.width, targetHeightPx / img.height);
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
+            const offsetX = (targetWidthPx - newWidth) / 2 + bleedPx;
+            const offsetY = (targetHeightPx - newHeight) / 2 + bleedPx;
+            ctx.drawImage(img, offsetX, offsetY, newWidth, newHeight);
+
+            if (outputFormat === 'pdf') {
+              const { jsPDF } = window.jspdf;
+              const pdf = new jsPDF({
+                orientation: targetWidthPx > targetHeightPx ? 'landscape' : 'portrait',
+                unit: 'pt',
+                format: [canvas.width, canvas.height]
+              });
+              const imgData = canvas.toDataURL('image/png');
+              pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+              const pdfBlob = pdf.output('blob');
+              const url = URL.createObjectURL(pdfBlob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `print-${file.name.split('.')[0]}.pdf`;
+              link.innerHTML = `<img src="${imgData}" class="preview"><br>Скачать PDF для ${file.name}`;
+              outputDiv.appendChild(link);
+            } else {
+              canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                const ext = outputFormat.split('/')[1];
+                link.href = url;
+                link.download = `print-${file.name.split('.')[0]}.${ext}`;
+                link.innerHTML = `<img src="${url}" class="preview"><br>Скачать ${file.name}`;
+                outputDiv.appendChild(link);
+              }, outputFormat, 0.9);
+            }
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Функция для генерации SVG с текстом
+    function vectorizeText() {
+      const text = document.getElementById('inputText').value;
+      if (!text.trim()) {
+        alert('Введите текст для преобразования.');
+        return;
+      }
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200">
+        <rect width="100%" height="100%" fill="#fff"/>
+        <text x="50%" y="50%" font-size="48" text-anchor="middle" fill="#000" dominant-baseline="middle">${text}</text>
+      </svg>`;
+      const blob = new Blob([svg], {type: 'image/svg+xml'});
+      const url = URL.createObjectURL(blob);
+      const outputDiv = document.getElementById('textOutput');
+      outputDiv.innerHTML = `<a href="${url}" download="text.svg">
+        <img src="${url}" alt="SVG Preview" class="preview"><br>Скачать SVG
+      </a>`;
+    }
+  </script>
+
+</body>
+</html>
